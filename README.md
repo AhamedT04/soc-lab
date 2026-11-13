@@ -18,7 +18,8 @@ Détails : [docs/architecture.md](docs/architecture.md)
 
 | # | Scénario | Technique MITRE ATT&CK | Statut |
 |---|----------|------------------------|--------|
-| 01 | Reconnaissance réseau (nmap) | T1046 | À faire |
+| 00 | [Validation de la télémétrie Sysmon et analyse d'un faux positif](scenarios/00-validation-telemetrie.md) | — | Terminé |
+| 01 | [Reconnaissance réseau (nmap)](scenarios/01-reconnaissance-nmap.md) | T1046 | Terminé |
 | 02 | Brute force RDP/SMB | T1110 | À faire |
 | 03 | Persistance (tâche planifiée / clé Run) | T1053 / T1547 | À faire |
 

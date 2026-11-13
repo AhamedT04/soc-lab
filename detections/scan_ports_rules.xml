@@ -1,0 +1,32 @@
+<!--
+  Scénario 01 – Détection d'un scan de ports sur la victime Windows
+  Source : événements 5152/5157 (paquet bloqué par la plateforme de filtrage Windows)
+  Prérequis : audit "Filtering Platform Packet Drop/Connection" activé (échecs)
+              et exclusion 5152/5157 retirée de la requête Security dans ossec.conf de l'agent
+  Déploiement : /var/ossec/etc/rules/scan_ports_rules.xml dans le conteneur wazuh.manager
+-->
+<group name="local,windows,firewall,">
+
+  <!-- Paquet bloqué isolé : rien d'alarmant seul, on le garde pour la corrélation
+       sans générer d'alerte (remplace le bruit de la règle 60104).
+       Niveau 2 et non 0 : un événement de niveau 0 est abandonné avant d'être
+       mémorisé pour if_matched_sid, la corrélation ne se déclenchait donc jamais.
+       Niveau 2 < seuil d'alerte (3) : toujours pas d'alerte, mais l'événement est compté. -->
+  <rule id="100100" level="2">
+    <if_sid>60104</if_sid>
+    <field name="win.system.eventID">^5152$|^5157$</field>
+    <description>Pare-feu Windows : paquet bloqué depuis $(win.eventdata.sourceAddress) vers le port $(win.eventdata.destPort)</description>
+  </rule>
+
+  <!-- 20 paquets bloqués ou plus depuis la même IP en 10 secondes = scan probable.
+       ignore="60" : une seule alerte par minute au lieu d'une rafale pendant le scan -->
+  <rule id="100101" level="10" frequency="20" timeframe="10" ignore="60">
+    <if_matched_sid>100100</if_matched_sid>
+    <same_field>win.eventdata.sourceAddress</same_field>
+    <description>Scan de ports probable depuis $(win.eventdata.sourceAddress) : 20+ paquets bloqués en 10 s</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+  </rule>
+
+</group>
